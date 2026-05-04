@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS ROBOTICS — 重新定义智能机器</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg: #0a0a0a;
+  --fg: #e8e4df;
+  --accent: #ff3c00;
+  --accent2: #00ffc8;
+  --muted: #555;
+  --grid: rgba(255,60,0,.06);
+  --mono: 'Space Mono', monospace;
+  --display: 'Chakra Petch', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--display);
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* ── GRID OVERLAY ───────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 80px),
+    repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 80px);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── NOISE TEXTURE ──────────────────────────── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* ── NAV ────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 0 40px;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(10,10,10,.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,60,0,.15);
+}
+.logo {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 4px;
+  color: var(--accent);
+  display: flex; align-items: center; gap: 12px;
+}
+.logo::before {
+  content: '';
+  width: 10px; height: 10px;
+  background: var(--accent);
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  animation: pulse-logo 2s ease-in-out infinite;
+}
+@keyframes pulse-logo {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .3; }
+}
+.nav-links { display: flex; gap: 32px; list-style: none; }
+.nav-links a {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color .2s;
+  position: relative;
+}
+.nav-links a:hover { color: var(--accent2); }
+.nav-links a::after {
+  content: '';
+  position: absolute; bottom: -4px; left: 0;
+  width: 0; height: 1px;
+  background: var(--accent2);
+  transition: width .3s;
+}
+.nav-links a:hover::after { width: 100%; }
+
+/* ── HERO ───────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+}
+.hero-left {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 120px 60px 80px;
+  position: relative;
+}
+.hero-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: slide-up .8s ease-out .2s forwards;
+}
+.hero-title {
+  font-size: clamp(48px, 7vw, 96px);
+  font-weight: 700;
+  line-height: .92;
+  letter-spacing: -2px;
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: slide-up .8s ease-out .4s forwards;
+}
+.hero-title .accent { color: var(--accent); }
+.hero-title .outline {
+  -webkit-text-stroke: 1.5px var(--fg);
+  color: transparent;
+}
+.hero-desc {
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 420px;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: slide-up .8s ease-out .6s forwards;
+}
+.hero-cta {
+  display: flex; gap: 16px;
+  opacity: 0;
+  animation: slide-up .8s ease-out .8s forwards;
+}
+.btn-primary {
+  padding: 14px 32px;
+  background: var(--accent);
+  color: #000;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  transition: all .2s;
+}
+.btn-primary:hover { background: #ff6030; transform: scale(1.02); }
+.btn-ghost {
+  padding: 14px 32px;
+  background: transparent;
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  border: 1px solid var(--muted);
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-ghost:hover { border-color: var(--accent2); color: var(--accent2); }
+
+/* Hero right - ASCII robot */
+.hero-right {
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.robot-ascii {
+  font-family: var(--mono);
+  font-size: 8px;
+  line-height: 1.1;
+  color: var(--accent);
+  white-space: pre;
+  opacity: .6;
+  animation: float 6s ease-in-out infinite;
+  user-select: none;
+  text-shadow: 0 0 20px rgba(255,60,0,.4);
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+.hero-right::before {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(255,60,0,.08) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: glow-pulse 4s ease-in-out infinite;
+}
+@keyframes glow-pulse {
+  0%, 100% { transform: scale(1); opacity: .5; }
+  50% { transform: scale(1.2); opacity: .8; }
+}
+
+/* ── SCROLL INDICATOR ───────────────────────── */
+.scroll-indicator {
+  position: absolute;
+  bottom: 40px; left: 60px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.scroll-indicator span {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  writing-mode: vertical-rl;
+}
+.scroll-line {
+  width: 1px; height: 60px;
+  background: linear-gradient(to bottom, var(--accent), transparent);
+  animation: scroll-anim 2s ease-in-out infinite;
+}
+@keyframes scroll-anim {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  51% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+/* ── STATS BAR ─────────────────────────────── */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid rgba(255,60,0,.15);
+  border-bottom: 1px solid rgba(255,60,0,.15);
+}
+.stat {
+  padding: 40px;
+  text-align: center;
+  position: relative;
+}
+.stat:not(:last-child)::after {
+  content: '';
+  position: absolute; right: 0; top: 20%; height: 60%;
+  width: 1px;
+  background: rgba(255,60,0,.15);
+}
+.stat-number {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.stat-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── PRODUCTS ───────────────────────────────── */
+.section { padding: 120px 60px; }
+.section-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 24px;
+}
+.section-title .thin { font-weight: 300; color: var(--muted); }
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-top: 64px;
+}
+.product-card {
+  background: rgba(255,255,255,.02);
+  padding: 48px 36px;
+  position: relative;
+  overflow: hidden;
+  transition: all .3s;
+  border: 1px solid transparent;
+}
+.product-card:hover {
+  background: rgba(255,60,0,.03);
+  border-color: rgba(255,60,0,.2);
+}
+.product-card:hover .product-icon { color: var(--accent); transform: scale(1.1); }
+.product-icon {
+  font-size: 48px;
+  margin-bottom: 24px;
+  color: var(--muted);
+  transition: all .3s;
+}
+.product-name {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.product-model {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+}
+.product-desc {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.product-specs {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,.05);
+  display: flex; gap: 24px;
+}
+.spec {
+  font-family: var(--mono);
+  font-size: 10px;
+}
+.spec-val { color: var(--accent2); font-size: 18px; font-weight: 700; display: block; margin-bottom: 2px; }
+.spec-label { color: var(--muted); letter-spacing: 1px; }
+
+/* ── TECHNOLOGY ─────────────────────────────── */
+.tech-section {
+  background: linear-gradient(180deg, var(--bg) 0%, #0f0f0f 100%);
+  border-top: 1px solid rgba(255,60,0,.1);
+}
+.tech-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  margin-top: 64px;
+}
+.tech-item {
+  position: relative;
+  padding-left: 32px;
+  border-left: 2px solid var(--accent);
+}
+.tech-item:nth-child(2) { border-color: var(--accent2); }
+.tech-item:nth-child(3) { border-color: #fff; }
+.tech-item:nth-child(4) { border-color: var(--accent); }
+.tech-num {
+  font-family: var(--mono);
+  font-size: 64px;
+  font-weight: 700;
+  color: rgba(255,60,0,.08);
+  position: absolute;
+  top: -16px; left: -4px;
+  line-height: 1;
+}
+.tech-name {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  margin-top: 16px;
+}
+.tech-desc {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* ── TIMELINE ───────────────────────────────── */
+.timeline {
+  position: relative;
+  padding-left: 40px;
+  margin-top: 48px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent), var(--accent2), transparent);
+}
+.timeline-item {
+  position: relative;
+  padding-bottom: 48px;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -44px; top: 6px;
+  width: 10px; height: 10px;
+  background: var(--accent);
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+.timeline-year {
+  font-family: var(--mono);
+  font-size: 48px;
+  font-weight: 700;
+  color: rgba(255,60,0,.12);
+  line-height: 1;
+}
+.timeline-event {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 8px 0;
+}
+.timeline-detail {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+/* ── CONTACT ────────────────────────────────── */
+.contact-section {
+  border-top: 1px solid rgba(255,60,0,.15);
+  position: relative;
+}
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+}
+.contact-form { display: flex; flex-direction: column; gap: 20px; }
+.form-group { position: relative; }
+.form-group input, .form-group textarea {
+  width: 100%;
+  padding: 16px 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--muted);
+  color: var(--fg);
+  font-family: var(--display);
+  font-size: 14px;
+  outline: none;
+  transition: border-color .3s;
+}
+.form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
+.form-group label {
+  position: absolute;
+  left: 0; top: 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  pointer-events: none;
+  transition: all .3s;
+}
+.form-group input:focus ~ label,
+.form-group textarea:focus ~ label,
+.form-group input:not(:placeholder-shown) ~ label,
+.form-group textarea:not(:placeholder-shown) ~ label {
+  top: -8px;
+  color: var(--accent);
+  font-size: 9px;
+}
+.form-group textarea { resize: vertical; min-height: 120px; }
+
+.contact-info { display: flex; flex-direction: column; justify-content: center; gap: 32px; }
+.info-item {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.info-label { color: var(--accent); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 4px; font-size: 9px; }
+.info-value { color: var(--fg); font-size: 14px; }
+
+/* ── FOOTER ─────────────────────────────────── */
+footer {
+  padding: 40px 60px;
+  border-top: 1px solid rgba(255,60,0,.1);
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+.footer-status {
+  display: flex; align-items: center; gap: 8px;
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent2);
+  animation: blink-dot 2s ease-in-out infinite;
+}
+@keyframes blink-dot { 50% { opacity: .2; } }
+
+/* ── ANIMATIONS ─────────────────────────────── */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── RESPONSIVE ─────────────────────────────── */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-right { display: none; }
+  .hero-left { padding: 120px 24px 80px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .products-grid { grid-template-columns: 1fr; }
+  .tech-grid { grid-template-columns: 1fr; }
+  .contact-grid { grid-template-columns: 1fr; }
+  .section { padding: 80px 24px; }
+  nav { padding: 0 24px; }
+  footer { padding: 32px 24px; flex-direction: column; gap: 16px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">NEXUS ROBOTICS</div>
+  <ul class="nav-links">
+    <li><a href="#products">产品</a></li>
+    <li><a href="#tech">技术</a></li>
+    <li><a href="#about">关于</a></li>
+    <li><a href="#contact">联系</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">// 新一代智能机器人平台</div>
+    <h1 class="hero-title">
+      <span class="accent">NEXUS</span><br>
+      <span class="outline">ROBOTICS</span>
+    </h1>
+    <p class="hero-desc">
+      我们构建不只是机器的机器。通过融合先进AI算法与精密机械工程，NEXUS正在重新定义人机协作的边界。每一个关节，每一次决策，都精准如你所需。
+    </p>
+    <div class="hero-cta">
+      <button class="btn-primary">探索产品</button>
+      <button class="btn-ghost">技术白皮书</button>
+    </div>
+    <div class="scroll-indicator">
+      <span>SCROLL</span>
+      <div class="scroll-line"></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <pre class="robot-ascii">
+            ╔══════════════════╗
+            ║   ┌──────────┐   ║
+            ║   │ ◉      ◉ │   ║
+            ║   │    ╰╯    │   ║
+            ║   └──────────┘   ║
+            ║    ╱  ╱│╲  ╲     ║
+            ║   ╱  ╱ │ ╲  ╲    ║
+            ║  ╱  ╱  │  ╲  ╲   ║
+            ║ ┌─────────────┐  ║
+            ║ │  ╔═══╗ ╔═══╗│  ║
+            ║ │  ║   ║ ║   ║│  ║
+            ║ │  ╚═══╝ ╚═══╝│  ║
+            ║ │  NX-7  CORE  │  ║
+            ║ └──────┬───────┘  ║
+            ║     ╱  │  ╲       ║
+            ║    ╱   │   ╲      ║
+            ║   ╱    │    ╲     ║
+            ║ ┌──┐   │   ┌──┐  ║
+            ║ │░░│   │   │░░│  ║
+            ║ └──┘   │   └──┘  ║
+            ╚════════╪══════════╝
+                 NEXUS ROBOTICS
+                    v7.2.1
+      SYSTEM STATUS: ■ ■ ■ ■ ■ ONLINE
+      NEURAL CORE : ██████████ 100%
+      MOTOR SYNC  : ██████████ SYNC
+      BATTERY     : ████████░░  82%
+    </pre>
+  </div>
+</section>
+
+<section class="stats-bar">
+  <div class="stat">
+    <div class="stat-number">200+</div>
+    <div class="stat-label">全球部署</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">99.97%</div>
+    <div class="stat-label">运行精度</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">0.02ms</div>
+    <div class="stat-label">决策延迟</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">47</div>
+    <div class="stat-label">核心专利</div>
+  </div>
+</section>
+
+<section class="section" id="products">
+  <div class="section-tag">// 核心产品矩阵</div>
+  <h2 class="section-title">我们的 <span class="thin">机器人</span></h2>
+  <div class="products-grid">
+    <div class="product-card">
+      <div class="product-icon">◈</div>
+      <div class="product-name">ATLAS</div>
+      <div class="product-model">NX-ATLAS-7</div>
+      <div class="product-desc">全地形四足机器人，搭载自主导航与动态平衡系统，适用于工业巡检、灾难救援和极端环境作业。</div>
+      <div class="product-specs">
+        <div class="spec"><span class="spec-val">60kg</span><span class="spec-label">负载</span></div>
+        <div class="spec"><span class="spec-val">8h</span><span class="spec-label">续航</span></div>
+        <div class="spec"><span class="spec-val">IP68</span><span class="spec-label">防护</span></div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-icon">⬡</div>
+      <div class="product-name">ORBIT</div>
+      <div class="product-model">NX-ORBIT-5</div>
+      <div class="product-desc">7轴协作机械臂，亚毫米级重复定位精度，支持力控与视觉引导，无缝融入现有产线。</div>
+      <div class="product-specs">
+        <div class="spec"><span class="spec-val">±0.02mm</span><span class="spec-label">精度</span></div>
+        <div class="spec"><span class="spec-val">1.3m</span><span class="spec-label">臂展</span></div>
+        <div class="spec"><span class="spec-val">12kg</span><span class="spec-label">负载</span></div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-icon">⬢</div>
+      <div class="product-name">SENTINEL</div>
+      <div class="product-model">NX-SNT-3</div>
+      <div class="product-desc">自主巡航安防机器人，融合3D SLAM、热成像与异常行为检测，实现24/7无人值守巡逻。</div>
+      <div class="product-specs">
+        <div class="spec"><span class="spec-val">360°</span><span class="spec-label">感知</span></div>
+        <div class="spec"><span class="spec-val">15km/h</span><span class="spec-label">速度</span></div>
+        <div class="spec"><span class="spec-val">12h</span><span class="spec-label">续航</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section tech-section" id="tech">
+  <div class="section-tag">// 技术架构</div>
+  <h2 class="section-title">核心技术 <span class="thin">栈</span></h2>
+  <div class="tech-grid">
+    <div class="tech-item">
+      <div class="tech-num">01</div>
+      <div class="tech-name">NEXUS NEURAL ENGINE</div>
+      <div class="tech-desc">自研神经推理引擎，基于Transformer架构优化，支持多模态感知融合。边缘端实时推理，延迟低于2ms，在机器人本体完成100%的决策计算。</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-num">02</div>
+      <div class="tech-name">DYNAMIC MOTION PLANNING</div>
+      <div class="tech-desc">基于模型预测控制（MPC）的运动规划系统，结合实时环境建模与碰撞规避，实现复杂动态环境中的流畅运动。</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-num">03</div>
+      <div class="tech-name">FUSION PERCEPTION</div>
+      <div class="tech-desc">多传感器融合感知架构，整合LiDAR点云、立体视觉、IMU与力矩传感，构建厘米级精度的实时3D环境地图。</div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-num">04</div>
+      <div class="tech-name">ROBOSWARM PROTOCOL</div>
+      <div class="tech-desc">去中心化多机器人协作协议，基于gossip通信实现群体智能调度。单集群支持100+节点实时协同，无需中心控制器。</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="about">
+  <div class="section-tag">// 发展历程</div>
+  <h2 class="section-title">我们的 <span class="thin">旅程</span></h2>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-year">2019</div>
+      <div class="timeline-event">公司成立</div>
+      <div class="timeline-detail">三位来自MIT和清华的机器人研究者，在深圳创立NEXUS Robotics</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">2021</div>
+      <div class="timeline-event">ATLAS 原型发布</div>
+      <div class="timeline-detail">首款全地形四足机器人原型完成，通过珠峰大本营极端环境测试</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">2023</div>
+      <div class="timeline-event">NEURAL ENGINE 突破</div>
+      <div class="timeline-detail">自研神经推理引擎将决策延迟从50ms降至2ms，获得12项核心专利</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">2025</div>
+      <div class="timeline-event">全球量产</div>
+      <div class="timeline-detail">三大产品线全面量产，服务200+企业客户，覆盖15个国家和地区</div>
+    </div>
+  </div>
+</section>
+
+<section class="section contact-section" id="contact">
+  <div class="section-tag">// 取得联系</div>
+  <h2 class="section-title">联系我们</h2>
+  <div class="contact-grid">
+    <form class="contact-form" onsubmit="event.preventDefault()">
+      <div class="form-group">
+        <input type="text" id="name" placeholder=" " required>
+        <label for="name">姓名</label>
+      </div>
+      <div class="form-group">
+        <input type="email" id="email" placeholder=" " required>
+        <label for="email">邮箱</label>
+      </div>
+      <div class="form-group">
+        <input type="text" id="company" placeholder=" ">
+        <label for="company">公司</label>
+      </div>
+      <div class="form-group">
+        <textarea id="message" placeholder=" " required></textarea>
+        <label for="message">留言</label>
+      </div>
+      <button type="submit" class="btn-primary" style="align-self:flex-start">发送消息</button>
+    </form>
+    <div class="contact-info">
+      <div class="info-item">
+        <div class="info-label">总部</div>
+        <div class="info-value">深圳市南山区科技园 NEXUS 大厦 28F</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">研发中心</div>
+        <div class="info-value">北京市海淀区中关村科学院南路 6 号</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">邮箱</div>
+        <div class="info-value">contact@nexus-robotics.dev</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">电话</div>
+        <div class="info-value">+86 755 8888 0000</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>© 2025 NEXUS ROBOTICS. ALL RIGHTS RESERVED.</span>
+  <div class="footer-status">
+    <div class="status-dot"></div>
+    <span>ALL SYSTEMS OPERATIONAL</span>
+  </div>
+</footer>
+
+</body>
+</html>
